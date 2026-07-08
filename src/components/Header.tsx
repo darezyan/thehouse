@@ -26,7 +26,7 @@ export default function Header() {
         </button>
 
         {open && (
-          <nav className="absolute top-10 left-0 flex w-56 flex-col gap-4 bg-white px-6 py-6 text-lg font-semibold tracking-wide text-black uppercase shadow-xl">
+          <nav className="absolute top-10 left-0 flex w-56 flex-col gap-4 bg-(--brand-cream) px-6 py-6 text-lg font-semibold tracking-wide text-black uppercase shadow-xl">
             <Link href="/" onClick={() => setOpen(false)}>
               Home
             </Link>

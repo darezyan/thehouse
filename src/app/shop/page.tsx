@@ -30,7 +30,7 @@ export default async function ShopPage() {
                 href={`/product/${product.id}`}
                 className="group block"
               >
-                <div className="aspect-3/4 w-full overflow-hidden bg-white">
+                <div className="aspect-3/4 w-full overflow-hidden bg-muted">
                   <img
                     src={product.image_url}
                     alt={product.name}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
@@ -17,8 +18,15 @@ export default async function ProductPage({
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
+      <Link
+        href="/shop"
+        className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
+      >
+        ← Back
+      </Link>
+
       <div className="grid gap-10 sm:grid-cols-2">
-        <div className="aspect-3/4 w-full overflow-hidden bg-white">
+        <div className="aspect-3/4 w-full overflow-hidden bg-muted">
           <img
             src={product.image_url}
             alt={product.name}

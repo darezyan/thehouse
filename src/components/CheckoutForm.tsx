@@ -109,7 +109,7 @@ export default function CheckoutForm() {
         className="-mt-16 flex min-h-screen items-center justify-center bg-cover bg-center px-5 pt-16"
         style={{ backgroundImage: "url('/brand/banner.jpg')" }}
       >
-        <div className="mx-auto w-full max-w-md bg-white/95 px-8 py-14 text-center shadow-xl">
+        <div className="mx-auto w-full max-w-md bg-(--brand-cream)/95 px-8 py-14 text-center shadow-xl">
           <h1 className="text-2xl font-semibold tracking-wide uppercase">Order placed</h1>
           <p className="mt-2 text-muted-foreground">
             Thanks, {form.name.split(" ")[0]}. We&apos;ll deliver to {form.address},{" "}
@@ -131,7 +131,7 @@ export default function CheckoutForm() {
         className="-mt-16 flex min-h-screen items-center justify-center bg-cover bg-center px-5 pt-16"
         style={{ backgroundImage: "url('/brand/banner.jpg')" }}
       >
-        <div className="mx-auto w-full max-w-md bg-white/95 px-8 py-14 text-center shadow-xl">
+        <div className="mx-auto w-full max-w-md bg-(--brand-cream)/95 px-8 py-14 text-center shadow-xl">
           <h1 className="text-2xl font-semibold tracking-wide uppercase">
             Nothing to check out
           </h1>
@@ -147,7 +147,7 @@ export default function CheckoutForm() {
       className="-mt-16 min-h-screen bg-cover bg-center px-5 pt-24 pb-16"
       style={{ backgroundImage: "url('/brand/banner.jpg')" }}
     >
-      <div className="mx-auto max-w-3xl bg-white/95 px-6 py-10 shadow-xl sm:px-10">
+      <div className="mx-auto max-w-3xl bg-(--brand-cream)/95 px-6 py-10 shadow-xl sm:px-10">
         <h1 className="mb-8 text-2xl font-semibold tracking-wide uppercase">Checkout</h1>
 
         <div className="grid gap-10 sm:grid-cols-2">
