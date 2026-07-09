@@ -11,6 +11,7 @@ import {
   deliveryFeeForState,
   type CheckoutFormValues,
 } from "@/lib/checkout";
+import type { DeliveryFees } from "@/lib/delivery";
 import { formatPrice } from "@/lib/format";
 import { initiateCheckoutAction } from "@/app/checkout/actions";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { Separator } from "@/components/ui/separator";
 
 type FieldErrors = Partial<Record<keyof CheckoutFormValues, string>>;
 
-export default function CheckoutForm() {
+export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryFees }) {
   const searchParams = useSearchParams();
   const isBuyNow = searchParams.get("buyNow") === "1";
   const { items: cartItems } = useCart();
@@ -49,7 +50,10 @@ export default function CheckoutForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const deliveryFee = useMemo(() => deliveryFeeForState(form.state), [form.state]);
+  const deliveryFee = useMemo(
+    () => deliveryFeeForState(form.state, deliveryFees),
+    [form.state, deliveryFees]
+  );
   const total = subtotal + deliveryFee;
 
   function update<K extends keyof typeof form>(key: K, value: string) {

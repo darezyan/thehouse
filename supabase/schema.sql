@@ -43,9 +43,29 @@ create table if not exists order_items (
   unit_price numeric(10,2) not null
 );
 
+-- Single-row settings table (id is pinned to 1) so the delivery fees are
+-- editable from /nimda/delivery instead of being hardcoded.
+create table if not exists delivery_settings (
+  id int primary key default 1,
+  lagos_fee numeric(10,2) not null default 5000,
+  other_states_fee numeric(10,2) not null default 10000,
+  updated_at timestamptz not null default now(),
+  constraint delivery_settings_single_row check (id = 1)
+);
+
+insert into delivery_settings (id, lagos_fee, other_states_fee)
+values (1, 5000, 10000)
+on conflict (id) do nothing;
+
 alter table products enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
+alter table delivery_settings enable row level security;
+
+-- Anyone can read the current delivery fees (needed to show them at checkout).
+create policy "delivery settings are publicly readable"
+  on delivery_settings for select
+  using (true);
 
 -- Anyone can browse the catalog.
 create policy "products are publicly readable"

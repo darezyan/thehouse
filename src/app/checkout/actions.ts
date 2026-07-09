@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { initiatePayment } from "@/lib/flutterwave";
 import { checkoutSchema, deliveryFeeForState, type CheckoutFormValues } from "@/lib/checkout";
+import { DEFAULT_DELIVERY_FEES } from "@/lib/delivery";
 import type { CartItem } from "@/lib/types";
 
 export async function initiateCheckoutAction(
@@ -20,7 +21,18 @@ export async function initiateCheckoutAction(
   }
 
   const data = result.data;
-  const deliveryFee = deliveryFeeForState(data.state);
+
+  // Never trust a client-supplied fee — re-fetch the current rates server-side.
+  const { data: settings } = await supabaseAdmin
+    .from("delivery_settings")
+    .select("lagos_fee, other_states_fee")
+    .eq("id", 1)
+    .single();
+  const deliveryFees = settings
+    ? { lagosFee: Number(settings.lagos_fee), otherStatesFee: Number(settings.other_states_fee) }
+    : DEFAULT_DELIVERY_FEES;
+
+  const deliveryFee = deliveryFeeForState(data.state, deliveryFees);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const total = subtotal + deliveryFee;
   // The "buynow"/"cart" marker lets /checkout/callback know whether to clear

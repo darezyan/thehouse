@@ -1,10 +1,15 @@
 import { Suspense } from "react";
 import CheckoutForm from "@/components/CheckoutForm";
+import { getDeliveryFees } from "@/lib/delivery";
 
-export default function CheckoutPage() {
+export const revalidate = 0;
+
+export default async function CheckoutPage() {
+  const deliveryFees = await getDeliveryFees();
+
   return (
     <Suspense>
-      <CheckoutForm />
+      <CheckoutForm deliveryFees={deliveryFees} />
     </Suspense>
   );
 }

@@ -17,6 +17,7 @@ export default async function AdminDashboardLayout({
             <Link href="/nimda">Dashboard</Link>
             <Link href="/nimda/products">Products</Link>
             <Link href="/nimda/orders">Orders</Link>
+            <Link href="/nimda/delivery">Delivery</Link>
           </nav>
           <form action={logoutAction}>
             <button

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { DeliveryFees } from "./delivery";
 
 export const NIGERIAN_STATES = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
@@ -8,9 +9,9 @@ export const NIGERIAN_STATES = [
   "Osun", "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara",
 ];
 
-export function deliveryFeeForState(state: string): number {
+export function deliveryFeeForState(state: string, fees: DeliveryFees): number {
   if (!state) return 0;
-  return state === "Lagos" ? 5000 : 10000;
+  return state === "Lagos" ? fees.lagosFee : fees.otherStatesFee;
 }
 
 export const checkoutSchema = z.object({
