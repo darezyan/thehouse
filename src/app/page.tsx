@@ -29,8 +29,8 @@ function TikTokIcon() {
 export default function Home() {
   return (
     <div
-      className="relative -mt-16 flex min-h-screen items-end justify-center bg-cover bg-center pb-32 sm:pb-40"
-      style={{ backgroundImage: "url('/brand/hero.jpg')" }}
+      className="relative -mt-16 flex min-h-screen items-end justify-center bg-contain bg-center bg-no-repeat pb-32 sm:pb-40"
+      style={{ backgroundImage: "url('/brand/hero.jpg')", backgroundColor: "#fec901" }}
     >
       <div className="flex flex-col items-center gap-6">
         <Link
