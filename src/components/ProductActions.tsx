@@ -5,15 +5,21 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-context";
 import { setBuyNowItem } from "@/lib/buy-now";
-import type { Product } from "@/lib/types";
+import { PRODUCT_SIZES, totalStock, type Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function ProductActions({ product }: { product: Product }) {
   const router = useRouter();
   const { addItem } = useCart();
-  const [size, setSize] = useState(product.sizes[0] ?? "");
+  const sizesWithStock = PRODUCT_SIZES.filter(
+    (s) => (product.size_quantities[s] ?? 0) > 0
+  );
+  const [size, setSize] = useState(sizesWithStock[0] ?? "");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+
+  const available = product.size_quantities[size as (typeof PRODUCT_SIZES)[number]] ?? 0;
+  const outOfStock = totalStock(product.size_quantities) === 0;
 
   function currentItem() {
     return {
@@ -37,17 +43,26 @@ export default function ProductActions({ product }: { product: Product }) {
     router.push("/checkout?buyNow=1");
   }
 
+  if (outOfStock) {
+    return <p className="text-sm font-medium text-muted-foreground uppercase">Out of stock</p>;
+  }
+
   return (
     <div className="space-y-6">
-      {product.sizes.length > 0 && (
-        <div>
-          <p className="mb-2 text-sm font-medium">Size</p>
-          <div className="flex flex-wrap gap-2">
-            {product.sizes.map((s) => (
+      <div>
+        <p className="mb-2 text-sm font-medium">Size</p>
+        <div className="flex flex-wrap gap-2">
+          {PRODUCT_SIZES.map((s) => {
+            const stock = product.size_quantities[s] ?? 0;
+            if (stock === 0) return null;
+            return (
               <button
                 key={s}
                 type="button"
-                onClick={() => setSize(s)}
+                onClick={() => {
+                  setSize(s);
+                  setQuantity(1);
+                }}
                 className={cn(
                   "min-w-11 rounded-md border px-3 py-2 text-sm transition",
                   s === size
@@ -57,10 +72,10 @@ export default function ProductActions({ product }: { product: Product }) {
               >
                 {s}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       <div>
         <p className="mb-2 text-sm font-medium">Quantity</p>
@@ -80,12 +95,14 @@ export default function ProductActions({ product }: { product: Product }) {
           <button
             type="button"
             aria-label="Increase quantity"
-            onClick={() => setQuantity((q) => q + 1)}
-            className="flex h-10 w-10 items-center justify-center text-lg hover:bg-muted"
+            onClick={() => setQuantity((q) => Math.min(available, q + 1))}
+            className="flex h-10 w-10 items-center justify-center text-lg hover:bg-muted disabled:opacity-30"
+            disabled={quantity >= available}
           >
             +
           </button>
         </div>
+        <p className="mt-1 text-xs text-muted-foreground">{available} in stock</p>
       </div>
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">

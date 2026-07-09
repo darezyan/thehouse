@@ -5,6 +5,7 @@ import type { CartItem } from "./types";
 
 const STORAGE_KEY = "cart";
 const listeners = new Set<() => void>();
+const EMPTY_CART: CartItem[] = [];
 let snapshot: CartItem[] = [];
 
 function readCart(): CartItem[] {
@@ -32,7 +33,11 @@ function getSnapshot() {
 }
 
 function getServerSnapshot() {
-  return snapshot;
+  // Always matches what the server actually rendered (an empty cart) —
+  // must stay independent of `snapshot`, which the client mutates from
+  // localStorage before hydration runs, or React's hydration check would
+  // compare the server's render against post-mutation client state.
+  return EMPTY_CART;
 }
 
 if (typeof window !== "undefined") {

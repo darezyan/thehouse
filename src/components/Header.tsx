@@ -2,12 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, ShoppingBag } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
 export default function Header() {
   const { count } = useCart();
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/nimda")) {
+    return null;
+  }
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 flex items-start justify-between px-5 py-4">

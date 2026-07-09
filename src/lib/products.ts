@@ -1,18 +1,17 @@
 import { supabase } from "./supabase";
-import type { Product } from "./types";
+import { totalStock, type Product } from "./types";
 
 export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("in_stock", true)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Failed to load products:", error.message);
     return [];
   }
-  return data ?? [];
+  return (data ?? []).filter((p) => totalStock(p.size_quantities) > 0);
 }
 
 export async function getProduct(id: string): Promise<Product | null> {

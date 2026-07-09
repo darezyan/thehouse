@@ -4,40 +4,53 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
-import { useBuyNowItem, clearBuyNowItem } from "@/lib/buy-now";
-import { supabase } from "@/lib/supabase";
+import { useBuyNowItem } from "@/lib/buy-now";
+import {
+  NIGERIAN_STATES,
+  checkoutSchema,
+  deliveryFeeForState,
+  type CheckoutFormValues,
+} from "@/lib/checkout";
 import { formatPrice } from "@/lib/format";
+import { initiateCheckoutAction } from "@/app/checkout/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 
+type FieldErrors = Partial<Record<keyof CheckoutFormValues, string>>;
+
 export default function CheckoutForm() {
   const searchParams = useSearchParams();
   const isBuyNow = searchParams.get("buyNow") === "1";
-  const { items: cartItems, clear: clearCart } = useCart();
+  const { items: cartItems } = useCart();
   const buyNowItem = useBuyNowItem();
 
   const items = useMemo(
     () => (isBuyNow ? (buyNowItem ? [buyNowItem] : []) : cartItems),
     [isBuyNow, buyNowItem, cartItems]
   );
-  const total = useMemo(
+  const subtotal = useMemo(
     () => items.reduce((sum, i) => sum + i.price * i.quantity, 0),
     [items]
   );
 
   const [form, setForm] = useState({
     name: "",
+    email: "",
     phone: "",
     address: "",
-    city: "",
+    town: "",
+    state: "",
     notes: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
+
+  const deliveryFee = useMemo(() => deliveryFeeForState(form.state), [form.state]);
+  const total = subtotal + deliveryFee;
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -47,10 +60,18 @@ export default function CheckoutForm() {
     e.preventDefault();
     setError(null);
 
-    if (!form.name || !form.phone || !form.address || !form.city) {
-      setError("Please fill in all required delivery details.");
+    const result = checkoutSchema.safeParse(form);
+    if (!result.success) {
+      const errors: FieldErrors = {};
+      for (const issue of result.error.issues) {
+        const key = issue.path[0] as keyof CheckoutFormValues;
+        if (!errors[key]) errors[key] = issue.message;
+      }
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
+
     if (items.length === 0) {
       setError("There's nothing to order.");
       return;
@@ -58,71 +79,21 @@ export default function CheckoutForm() {
 
     setSubmitting(true);
 
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        customer_name: form.name,
-        phone: form.phone,
-        address: form.address,
-        city: form.city,
-        notes: form.notes || null,
-        total,
-      })
-      .select("id")
-      .single();
+    const { error: initError, redirectUrl } = await initiateCheckoutAction(
+      result.data,
+      items,
+      isBuyNow
+    );
 
-    if (orderError || !order) {
-      setError("Something went wrong placing your order. Please try again.");
+    if (initError || !redirectUrl) {
+      setError(initError ?? "Something went wrong placing your order. Please try again.");
       setSubmitting(false);
       return;
     }
 
-    const { error: itemsError } = await supabase.from("order_items").insert(
-      items.map((item) => ({
-        order_id: order.id,
-        product_id: item.productId,
-        product_name: item.name,
-        size: item.size,
-        quantity: item.quantity,
-        unit_price: item.price,
-      }))
-    );
-
-    if (itemsError) {
-      setError("Something went wrong placing your order. Please try again.");
-      setSubmitting(false);
-      return;
-    }
-
-    if (isBuyNow) {
-      clearBuyNowItem();
-    } else {
-      clearCart();
-    }
-    setOrderId(order.id);
-    setSubmitting(false);
-  }
-
-  if (orderId) {
-    return (
-      <div
-        className="-mt-16 flex min-h-screen items-center justify-center bg-cover bg-center px-5 pt-16"
-        style={{ backgroundImage: "url('/brand/banner.jpg')" }}
-      >
-        <div className="mx-auto w-full max-w-md bg-(--brand-cream)/95 px-8 py-14 text-center shadow-xl">
-          <h1 className="text-2xl font-semibold tracking-wide uppercase">Order placed</h1>
-          <p className="mt-2 text-muted-foreground">
-            Thanks, {form.name.split(" ")[0]}. We&apos;ll deliver to {form.address},{" "}
-            {form.city}. Your order reference is{" "}
-            <span className="font-mono text-foreground">
-              {orderId.slice(0, 8)}
-            </span>
-            .
-          </p>
-          <Button className="mt-6 h-11 px-6" nativeButton={false} render={<Link href="/shop">Continue shopping</Link>} />
-        </div>
-      </div>
-    );
+    // Cart/buy-now item are only cleared once /checkout/callback confirms
+    // payment succeeded, not here — the customer hasn't paid yet.
+    window.location.href = redirectUrl;
   }
 
   if (items.length === 0) {
@@ -151,7 +122,7 @@ export default function CheckoutForm() {
         <h1 className="mb-8 text-2xl font-semibold tracking-wide uppercase">Checkout</h1>
 
         <div className="grid gap-10 sm:grid-cols-2">
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <h2 className="text-sm font-medium text-muted-foreground">
               Delivery details
             </h2>
@@ -162,8 +133,25 @@ export default function CheckoutForm() {
                 id="name"
                 value={form.name}
                 onChange={(e) => update("name", e.target.value)}
-                required
+                aria-invalid={!!fieldErrors.name}
               />
+              {fieldErrors.name && (
+                <p className="text-sm text-destructive">{fieldErrors.name}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                aria-invalid={!!fieldErrors.email}
+              />
+              {fieldErrors.email && (
+                <p className="text-sm text-destructive">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -173,8 +161,11 @@ export default function CheckoutForm() {
                 type="tel"
                 value={form.phone}
                 onChange={(e) => update("phone", e.target.value)}
-                required
+                aria-invalid={!!fieldErrors.phone}
               />
+              {fieldErrors.phone && (
+                <p className="text-sm text-destructive">{fieldErrors.phone}</p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -183,18 +174,49 @@ export default function CheckoutForm() {
                 id="address"
                 value={form.address}
                 onChange={(e) => update("address", e.target.value)}
-                required
+                aria-invalid={!!fieldErrors.address}
               />
+              {fieldErrors.address && (
+                <p className="text-sm text-destructive">{fieldErrors.address}</p>
+              )}
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={form.city}
-                onChange={(e) => update("city", e.target.value)}
-                required
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="town">Town</Label>
+                <Input
+                  id="town"
+                  value={form.town}
+                  onChange={(e) => update("town", e.target.value)}
+                  aria-invalid={!!fieldErrors.town}
+                />
+                {fieldErrors.town && (
+                  <p className="text-sm text-destructive">{fieldErrors.town}</p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="state">State</Label>
+                <select
+                  id="state"
+                  value={form.state}
+                  onChange={(e) => update("state", e.target.value)}
+                  aria-invalid={!!fieldErrors.state}
+                  className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
+                >
+                  <option value="" disabled>
+                    Select state
+                  </option>
+                  {NIGERIAN_STATES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.state && (
+                  <p className="text-sm text-destructive">{fieldErrors.state}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -246,6 +268,19 @@ export default function CheckoutForm() {
                   </p>
                 </div>
               ))}
+            </div>
+            <Separator className="my-4" />
+            <div className="space-y-1.5 text-sm">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Delivery</span>
+                <span>
+                  {form.state ? formatPrice(deliveryFee) : "Select a state"}
+                </span>
+              </div>
             </div>
             <Separator className="my-4" />
             <div className="flex items-center justify-between text-base font-medium">
