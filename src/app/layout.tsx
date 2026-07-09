@@ -15,8 +15,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "The House",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"),
+  title: {
+    default: "The House",
+    template: "%s | The House",
+  },
   description: "Minimal clothes shop.",
+  openGraph: {
+    title: "The House",
+    description: "Minimal clothes shop.",
+    siteName: "The House",
+    type: "website",
+    locale: "en_NG",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The House",
+    description: "Minimal clothes shop.",
+  },
 };
 
 export default function RootLayout({
