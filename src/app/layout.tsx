@@ -20,10 +20,10 @@ export const metadata: Metadata = {
     default: "The House",
     template: "%s | The House",
   },
-  description: "Minimal clothes shop.",
+  description: "Quality custom clothing.",
   openGraph: {
     title: "The House",
-    description: "Minimal clothes shop.",
+    description: "Quality custom clothing.",
     siteName: "The House",
     type: "website",
     locale: "en_NG",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "The House",
-    description: "Minimal clothes shop.",
+    description: "Quality custom clothing.",
   },
 };
 
