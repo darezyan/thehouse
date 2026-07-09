@@ -109,12 +109,12 @@ export default function ProductActions({ product }: { product: Product }) {
         <Button
           size="lg"
           variant="outline"
-          className="h-12 flex-1 text-sm"
+          className="flex-1 py-4 text-sm"
           onClick={handleAddToCart}
         >
           {added ? "Added ✓" : "Add to Cart"}
         </Button>
-        <Button size="lg" className="h-12 flex-1 text-sm" onClick={handleBuyNow}>
+        <Button size="lg" className="flex-1 py-4 text-sm" onClick={handleBuyNow}>
           Buy Now
         </Button>
       </div>
