@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { PRODUCT_SIZES, PRODUCT_COLORS, PRODUCT_COLOR_SWATCHES, type SizeQuantities } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,23 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
   const [state, formAction, pending] = useActionState(action, initialState);
   const fieldErrors = state.fieldErrors ?? {};
 
+  // Controlled so a failed submission (e.g. missing photo) can't wipe what
+  // was already typed — uncontrolled defaultValue inputs were losing their
+  // values across the round trip.
+  const [name, setName] = useState(initialValues?.name ?? "");
+  const [description, setDescription] = useState(initialValues?.description ?? "");
+  const [price, setPrice] = useState(initialValues?.price?.toString() ?? "");
+  const [discountPercent, setDiscountPercent] = useState(
+    (initialValues?.discountPercent ?? 0).toString()
+  );
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const size of PRODUCT_SIZES) {
+      initial[size] = (initialValues?.sizeQuantities[size] ?? 0).toString();
+    }
+    return initial;
+  });
+
   const [existingImages, setExistingImages] = useState<string[]>(initialValues?.imageUrls ?? []);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>(initialValues?.colors ?? []);
@@ -52,7 +70,13 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
     <form action={formAction} className="max-w-xl space-y-5">
       <div className="space-y-1.5">
         <Label htmlFor="name">Name</Label>
-        <Input id="name" name="name" defaultValue={initialValues?.name} aria-invalid={!!fieldErrors.name} />
+        <Input
+          id="name"
+          name="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          aria-invalid={!!fieldErrors.name}
+        />
         {fieldErrors.name && <p className="text-sm text-destructive">{fieldErrors.name}</p>}
       </div>
 
@@ -62,7 +86,8 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
           id="description"
           name="description"
           rows={4}
-          defaultValue={initialValues?.description}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           aria-invalid={!!fieldErrors.description}
         />
         {fieldErrors.description && (
@@ -79,7 +104,8 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
             type="number"
             min="0"
             step="1"
-            defaultValue={initialValues?.price}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
             aria-invalid={!!fieldErrors.price}
           />
           {fieldErrors.price && <p className="text-sm text-destructive">{fieldErrors.price}</p>}
@@ -94,7 +120,8 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
             min="0"
             max="100"
             step="1"
-            defaultValue={initialValues?.discountPercent ?? 0}
+            value={discountPercent}
+            onChange={(e) => setDiscountPercent(e.target.value)}
             aria-invalid={!!fieldErrors.discountPercent}
           />
           {fieldErrors.discountPercent && (
@@ -118,7 +145,10 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
                 type="number"
                 min="0"
                 step="1"
-                defaultValue={initialValues?.sizeQuantities[size] ?? 0}
+                value={sizeQuantities[size]}
+                onChange={(e) =>
+                  setSizeQuantities((cur) => ({ ...cur, [size]: e.target.value }))
+                }
               />
             </div>
           ))}
@@ -132,23 +162,30 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
       <div className="space-y-3">
         <Label>Colors (optional)</Label>
         <div className="flex flex-wrap gap-3">
-          {PRODUCT_COLORS.map((color) => (
-            <label key={color} className="flex items-center gap-1.5 text-sm">
-              <input
-                type="checkbox"
-                name="colors"
-                value={color}
-                checked={selectedColors.includes(color)}
-                onChange={(e) => toggleColor(color, e.target.checked)}
-                className="h-4 w-4 accent-(--brand-gold)"
-              />
-              <span
-                className="h-3.5 w-3.5 rounded-full border border-black/20"
-                style={{ backgroundColor: PRODUCT_COLOR_SWATCHES[color] }}
-              />
-              {color}
-            </label>
-          ))}
+          {PRODUCT_COLORS.map((color) => {
+            const isSelected = selectedColors.includes(color);
+            return (
+              <button
+                key={color}
+                type="button"
+                onClick={() => toggleColor(color, !isSelected)}
+                aria-pressed={isSelected}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-sm transition",
+                  isSelected
+                    ? "border-(--brand-gold) bg-(--brand-gold)/10"
+                    : "border-border hover:border-(--brand-gold)/50"
+                )}
+              >
+                {isSelected && <input type="hidden" name="colors" value={color} />}
+                <span
+                  className="h-3.5 w-3.5 rounded-full border border-black/20"
+                  style={{ backgroundColor: PRODUCT_COLOR_SWATCHES[color] }}
+                />
+                {color}
+              </button>
+            );
+          })}
         </div>
         <p className="text-xs text-muted-foreground">
           Leave all unchecked if this product doesn&apos;t come in different colors. Each color you
@@ -194,7 +231,7 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
       </div>
 
       <div className="space-y-1.5">
-        <Label>Product photos</Label>
+        <Label>Product photos{selectedColors.length > 0 ? " (optional)" : ""}</Label>
         {existingImages.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {existingImages.map((url) => (
@@ -232,6 +269,9 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
         <p className="text-xs text-muted-foreground">
           The first photo is the cover image shown in the shop. Customers can swipe through all of
           them on the product page.
+          {selectedColors.length > 0
+            ? " If you skip these, the first color's photo below becomes the cover instead."
+            : ""}
         </p>
         {fieldErrors.images && <p className="text-sm text-destructive">{fieldErrors.images}</p>}
       </div>

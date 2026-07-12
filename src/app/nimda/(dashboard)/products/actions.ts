@@ -112,7 +112,9 @@ export async function createProductAction(
   const imageFiles = formData.getAll("images").filter(
     (f): f is File => f instanceof File && f.size > 0
   );
-  if (imageFiles.length === 0) {
+  // A general photo is only mandatory when there are no colors — colors
+  // already force their own required photo, so those alone can cover it.
+  if (imageFiles.length === 0 && result.data.colors.length === 0) {
     return { fieldErrors: { images: "Upload at least one product photo" } };
   }
 
@@ -129,6 +131,12 @@ export async function createProductAction(
     colorImages = resolved.colorImages;
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Image upload failed" };
+  }
+
+  // If there's no general photo, the shop/cart cover falls back to the
+  // first color's photo so image_urls[0] is never empty.
+  if (imageUrls.length === 0 && Object.keys(colorImages).length > 0) {
+    imageUrls = [Object.values(colorImages)[0]];
   }
 
   const { error } = await supabaseAdmin.from("products").insert({
@@ -183,7 +191,11 @@ export async function updateProductAction(
     return { error: err instanceof Error ? err.message : "Image upload failed" };
   }
 
-  const imageUrls = [...existingImages, ...newImageUrls];
+  let imageUrls = [...existingImages, ...newImageUrls];
+  if (imageUrls.length === 0 && Object.keys(colorImages).length > 0) {
+    // No general photo — fall back to the first color's photo as the cover.
+    imageUrls = [Object.values(colorImages)[0]];
+  }
   if (imageUrls.length === 0) {
     return { fieldErrors: { images: "A product needs at least one photo" } };
   }

@@ -49,60 +49,64 @@ export default function ProductGallery({
   }
 
   return (
-    <div className="relative">
-      <div
-        ref={scrollerRef}
-        onScroll={handleScroll}
-        className="no-scrollbar flex aspect-3/4 w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
-      >
-        {images.map((src) => (
-          <img
-            key={src}
-            src={src}
-            alt={alt}
-            className="h-full w-full shrink-0 snap-center object-cover"
-          />
-        ))}
+    <div>
+      <div className="relative">
+        <div
+          ref={scrollerRef}
+          onScroll={handleScroll}
+          className="no-scrollbar flex aspect-3/4 w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden"
+        >
+          {images.map((src) => (
+            <img
+              key={src}
+              src={src}
+              alt={alt}
+              className="h-full w-full shrink-0 snap-center object-cover"
+            />
+          ))}
+        </div>
+
+        {images.length > 1 && (
+          <>
+            {activeIndex > 0 && (
+              <button
+                type="button"
+                aria-label="Previous photo"
+                onClick={() => onIndexChange(activeIndex - 1)}
+                className="absolute top-1/2 left-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl shadow-md"
+              >
+                ‹
+              </button>
+            )}
+            {activeIndex < images.length - 1 && (
+              <button
+                type="button"
+                aria-label="Next photo"
+                onClick={() => onIndexChange(activeIndex + 1)}
+                className="absolute top-1/2 right-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl shadow-md"
+              >
+                ›
+              </button>
+            )}
+          </>
+        )}
       </div>
 
       {images.length > 1 && (
-        <>
-          {activeIndex > 0 && (
+        <div className="mt-3 flex justify-center gap-2">
+          {images.map((src, i) => (
             <button
+              key={src}
               type="button"
-              aria-label="Previous photo"
-              onClick={() => onIndexChange(activeIndex - 1)}
-              className="absolute top-1/2 left-2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-lg"
-            >
-              ‹
-            </button>
-          )}
-          {activeIndex < images.length - 1 && (
-            <button
-              type="button"
-              aria-label="Next photo"
-              onClick={() => onIndexChange(activeIndex + 1)}
-              className="absolute top-1/2 right-2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-lg"
-            >
-              ›
-            </button>
-          )}
-
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
-            {images.map((src, i) => (
-              <button
-                key={src}
-                type="button"
-                aria-label={`Go to photo ${i + 1}`}
-                onClick={() => onIndexChange(i)}
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full transition",
-                  i === activeIndex ? "bg-black" : "bg-black/30"
-                )}
-              />
-            ))}
-          </div>
-        </>
+              aria-label={`Go to photo ${i + 1}`}
+              onClick={() => onIndexChange(i)}
+              className={cn(
+                "h-2.5 w-2.5 rounded-full transition",
+                i === activeIndex ? "bg-(--brand-gold)" : "bg-(--brand-gold)/30"
+              )}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
