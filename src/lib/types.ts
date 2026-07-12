@@ -21,6 +21,7 @@ export type Product = {
   size_quantities: SizeQuantities;
   discount_percent: number;
   colors: string[];
+  color_images: Record<string, string>;
   created_at: string;
 };
 

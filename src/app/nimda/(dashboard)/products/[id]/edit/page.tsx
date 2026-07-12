@@ -36,6 +36,7 @@ export default async function EditProductPage({
           discountPercent: product.discount_percent,
           sizeQuantities: product.size_quantities,
           colors: product.colors,
+          colorImages: product.color_images,
           imageUrls: product.image_urls,
         }}
       />

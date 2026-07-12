@@ -72,6 +72,32 @@ async function uploadImages(files: File[]): Promise<string[]> {
   return urls;
 }
 
+// Every selected color needs exactly one photo — either a newly uploaded
+// file, or (on edit) the one it already had. Colors with neither are
+// reported back so the form can show which ones still need a photo.
+async function resolveColorImages(
+  colors: string[],
+  formData: FormData
+): Promise<{ colorImages: Record<string, string>; missing: string[] }> {
+  const colorImages: Record<string, string> = {};
+  const missing: string[] = [];
+
+  for (const color of colors) {
+    const file = formData.get(`colorImage_${color}`);
+    const existing = formData.get(`existingColorImage_${color}`);
+
+    if (file instanceof File && file.size > 0) {
+      colorImages[color] = await uploadImage(file);
+    } else if (typeof existing === "string" && existing) {
+      colorImages[color] = existing;
+    } else {
+      missing.push(color);
+    }
+  }
+
+  return { colorImages, missing };
+}
+
 export async function createProductAction(
   _prevState: ProductFormState,
   formData: FormData
@@ -91,8 +117,16 @@ export async function createProductAction(
   }
 
   let imageUrls: string[];
+  let colorImages: Record<string, string>;
   try {
     imageUrls = await uploadImages(imageFiles);
+    const resolved = await resolveColorImages(result.data.colors, formData);
+    if (resolved.missing.length > 0) {
+      return {
+        fieldErrors: { colors: `Upload a photo for: ${resolved.missing.join(", ")}` },
+      };
+    }
+    colorImages = resolved.colorImages;
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Image upload failed" };
   }
@@ -104,6 +138,7 @@ export async function createProductAction(
     discount_percent: result.data.discountPercent,
     size_quantities: result.data.sizeQuantities,
     colors: result.data.colors,
+    color_images: colorImages,
     image_urls: imageUrls,
   });
 
@@ -134,8 +169,16 @@ export async function updateProductAction(
   );
 
   let newImageUrls: string[];
+  let colorImages: Record<string, string>;
   try {
     newImageUrls = await uploadImages(newImageFiles);
+    const resolved = await resolveColorImages(result.data.colors, formData);
+    if (resolved.missing.length > 0) {
+      return {
+        fieldErrors: { colors: `Upload a photo for: ${resolved.missing.join(", ")}` },
+      };
+    }
+    colorImages = resolved.colorImages;
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Image upload failed" };
   }
@@ -152,6 +195,7 @@ export async function updateProductAction(
     discount_percent: result.data.discountPercent,
     size_quantities: result.data.sizeQuantities,
     colors: result.data.colors,
+    color_images: colorImages,
     image_urls: imageUrls,
   };
 

@@ -14,7 +14,13 @@ import {
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export default function ProductActions({ product }: { product: Product }) {
+export default function ProductActions({
+  product,
+  onColorSelect,
+}: {
+  product: Product;
+  onColorSelect?: (color: string) => void;
+}) {
   const router = useRouter();
   const { addItem } = useCart();
   const sizesWithStock = PRODUCT_SIZES.filter(
@@ -95,7 +101,10 @@ export default function ProductActions({ product }: { product: Product }) {
                 key={c}
                 type="button"
                 aria-label={c}
-                onClick={() => setColor(c)}
+                onClick={() => {
+                  setColor(c);
+                  onColorSelect?.(c);
+                }}
                 className={cn(
                   "h-8 w-8 rounded-full border-2 transition",
                   c === color ? "border-(--brand-gold)" : "border-border"

@@ -15,6 +15,10 @@ create table if not exists products (
   discount_percent int not null default 0 check (discount_percent >= 0 and discount_percent <= 100),
   -- Optional. Empty means this product doesn't offer color choices at all.
   colors text[] not null default '{}',
+  -- One required photo per entry in `colors`, e.g. {"Black": "https://...jpg"}.
+  -- Shown in the gallery alongside image_urls, and clicking a color swatch
+  -- jumps the gallery straight to its photo.
+  color_images jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
 

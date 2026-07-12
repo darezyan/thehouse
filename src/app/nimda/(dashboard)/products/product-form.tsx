@@ -20,6 +20,7 @@ type ProductFormProps = {
     discountPercent: number;
     sizeQuantities: SizeQuantities;
     colors: string[];
+    colorImages: Record<string, string>;
     imageUrls: string[];
   };
 };
@@ -30,10 +31,21 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
 
   const [existingImages, setExistingImages] = useState<string[]>(initialValues?.imageUrls ?? []);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>(initialValues?.colors ?? []);
+  const [colorPreviews, setColorPreviews] = useState<Record<string, string>>({});
 
   function handleNewImages(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     setNewImagePreviews(files.map((f) => URL.createObjectURL(f)));
+  }
+
+  function toggleColor(color: string, checked: boolean) {
+    setSelectedColors((cur) => (checked ? [...cur, color] : cur.filter((c) => c !== color)));
+  }
+
+  function handleColorImage(color: string, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    setColorPreviews((cur) => ({ ...cur, [color]: file ? URL.createObjectURL(file) : "" }));
   }
 
   return (
@@ -117,7 +129,7 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
         </p>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         <Label>Colors (optional)</Label>
         <div className="flex flex-wrap gap-3">
           {PRODUCT_COLORS.map((color) => (
@@ -126,7 +138,8 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
                 type="checkbox"
                 name="colors"
                 value={color}
-                defaultChecked={initialValues?.colors.includes(color)}
+                checked={selectedColors.includes(color)}
+                onChange={(e) => toggleColor(color, e.target.checked)}
                 className="h-4 w-4 accent-(--brand-gold)"
               />
               <span
@@ -138,8 +151,46 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          Leave all unchecked if this product doesn&apos;t come in different colors.
+          Leave all unchecked if this product doesn&apos;t come in different colors. Each color you
+          check needs its own photo below.
         </p>
+
+        {selectedColors.length > 0 && (
+          <div className="space-y-3 border-l-2 border-black/10 pl-4">
+            {selectedColors.map((color) => {
+              const existing = initialValues?.colorImages[color];
+              const preview = colorPreviews[color];
+              return (
+                <div key={color} className="space-y-1">
+                  <Label htmlFor={`colorImage_${color}`} className="text-xs">
+                    {color} photo
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    {(preview || existing) && (
+                      <img
+                        src={preview || existing}
+                        alt=""
+                        className="h-16 w-14 object-cover"
+                      />
+                    )}
+                    {existing && !preview && (
+                      <input type="hidden" name={`existingColorImage_${color}`} value={existing} />
+                    )}
+                    <input
+                      id={`colorImage_${color}`}
+                      name={`colorImage_${color}`}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleColorImage(color, e)}
+                      className="block text-sm file:mr-3 file:border-0 file:bg-black file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {fieldErrors.colors && <p className="text-sm text-destructive">{fieldErrors.colors}</p>}
       </div>
 
       <div className="space-y-1.5">
