@@ -50,7 +50,7 @@ export default function ProductGallery({
 
   return (
     <div>
-      <div className="relative">
+      <div className="relative overflow-hidden bg-muted">
         <div
           ref={scrollerRef}
           onScroll={handleScroll}

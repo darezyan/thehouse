@@ -33,14 +33,12 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   return (
     <div className="grid gap-10 sm:grid-cols-2">
-      <div className="overflow-hidden bg-muted">
-        <ProductGallery
-          images={galleryImages}
-          alt={product.name}
-          activeIndex={activeIndex}
-          onIndexChange={setActiveIndex}
-        />
-      </div>
+      <ProductGallery
+        images={galleryImages}
+        alt={product.name}
+        activeIndex={activeIndex}
+        onIndexChange={setActiveIndex}
+      />
 
       <div className="flex flex-col">
         <h1 className="text-2xl font-semibold tracking-wide uppercase">{product.name}</h1>
