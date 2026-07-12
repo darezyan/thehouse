@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getProducts } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
+import { getDiscountedPrice } from "@/lib/types";
 
 export const revalidate = 0;
 
@@ -32,7 +33,7 @@ export default async function ShopPage() {
               >
                 <div className="aspect-3/4 w-full overflow-hidden bg-muted">
                   <img
-                    src={product.image_url}
+                    src={product.image_urls[0]}
                     alt={product.name}
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                   />
@@ -41,9 +42,18 @@ export default async function ShopPage() {
                   <p className="text-sm font-medium tracking-wide uppercase">
                     {product.name}
                   </p>
-                  <p className="text-sm text-(--brand-gold)">
-                    {formatPrice(product.price)}
-                  </p>
+                  {product.discount_percent > 0 ? (
+                    <p className="text-sm">
+                      <span className="mr-1.5 text-muted-foreground line-through">
+                        {formatPrice(product.price)}
+                      </span>
+                      <span className="text-(--brand-gold)">
+                        {formatPrice(getDiscountedPrice(product.price, product.discount_percent))}
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="text-sm text-(--brand-gold)">{formatPrice(product.price)}</p>
+                  )}
                 </div>
               </Link>
             ))}

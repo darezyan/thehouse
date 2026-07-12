@@ -66,6 +66,7 @@ export async function initiateCheckoutAction(
       product_id: item.productId,
       product_name: item.name,
       size: item.size,
+      color: item.color ?? null,
       quantity: item.quantity,
       unit_price: item.price,
     }))

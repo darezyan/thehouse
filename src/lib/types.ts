@@ -1,5 +1,15 @@
 export const PRODUCT_SIZES = ["S", "M", "L", "XL", "2XL", "3XL"] as const;
 
+export const PRODUCT_COLORS = ["White", "Black", "Off-white", "Green", "Brown"] as const;
+
+export const PRODUCT_COLOR_SWATCHES: Record<string, string> = {
+  White: "#ffffff",
+  Black: "#000000",
+  "Off-white": "#f2ead9",
+  Green: "#3f5c3f",
+  Brown: "#6b4423",
+};
+
 export type SizeQuantities = Partial<Record<(typeof PRODUCT_SIZES)[number], number>>;
 
 export type Product = {
@@ -7,8 +17,10 @@ export type Product = {
   name: string;
   description: string;
   price: number;
-  image_url: string;
+  image_urls: string[];
   size_quantities: SizeQuantities;
+  discount_percent: number;
+  colors: string[];
   created_at: string;
 };
 
@@ -18,6 +30,11 @@ export function totalStock(sizeQuantities: SizeQuantities): number {
 
 export function availableSizes(sizeQuantities: SizeQuantities): string[] {
   return PRODUCT_SIZES.filter((s) => (sizeQuantities[s] ?? 0) > 0);
+}
+
+export function getDiscountedPrice(price: number, discountPercent: number): number {
+  if (!discountPercent) return price;
+  return Math.round(price * (1 - discountPercent / 100));
 }
 
 export const ORDER_STATUSES = ["pending", "delivered"] as const;
@@ -48,6 +65,7 @@ export type OrderItem = {
   product_id: string | null;
   product_name: string;
   size: string | null;
+  color: string | null;
   quantity: number;
   unit_price: number;
 };
@@ -58,5 +76,6 @@ export type CartItem = {
   price: number;
   image_url: string;
   size: string;
+  color?: string;
   quantity: number;
 };

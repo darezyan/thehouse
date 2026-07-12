@@ -251,7 +251,7 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
             <div className="space-y-4">
               {items.map((item) => (
                 <div
-                  key={`${item.productId}-${item.size}`}
+                  key={`${item.productId}-${item.size}-${item.color ?? ""}`}
                   className="flex items-center gap-3"
                 >
                   <div className="h-16 w-14 shrink-0 overflow-hidden bg-muted">
@@ -264,7 +264,8 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
                   <div className="flex-1 text-sm">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-muted-foreground">
-                      Size {item.size} · Qty {item.quantity}
+                      Size {item.size}
+                      {item.color ? ` · ${item.color}` : ""} · Qty {item.quantity}
                     </p>
                   </div>
                   <p className="text-sm font-medium">

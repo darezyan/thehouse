@@ -36,7 +36,7 @@ export default function CartPage() {
 
       <div className="space-y-6">
         {items.map((item) => (
-          <div key={`${item.productId}-${item.size}`} className="flex gap-4">
+          <div key={`${item.productId}-${item.size}-${item.color ?? ""}`} className="flex gap-4">
             <div className="h-28 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
               <img
                 src={item.image_url}
@@ -51,6 +51,7 @@ export default function CartPage() {
                   <p className="text-sm font-medium">{item.name}</p>
                   <p className="text-sm text-muted-foreground">
                     Size {item.size}
+                    {item.color ? ` · ${item.color}` : ""}
                   </p>
                 </div>
                 <p className="text-sm font-medium">
@@ -64,7 +65,7 @@ export default function CartPage() {
                     type="button"
                     aria-label="Decrease quantity"
                     onClick={() =>
-                      setQuantity(item.productId, item.size, item.quantity - 1)
+                      setQuantity(item.productId, item.size, item.quantity - 1, item.color)
                     }
                     className="flex h-8 w-8 items-center justify-center hover:bg-muted"
                   >
@@ -77,7 +78,7 @@ export default function CartPage() {
                     type="button"
                     aria-label="Increase quantity"
                     onClick={() =>
-                      setQuantity(item.productId, item.size, item.quantity + 1)
+                      setQuantity(item.productId, item.size, item.quantity + 1, item.color)
                     }
                     className="flex h-8 w-8 items-center justify-center hover:bg-muted"
                   >
@@ -87,7 +88,7 @@ export default function CartPage() {
 
                 <button
                   type="button"
-                  onClick={() => removeItem(item.productId, item.size)}
+                  onClick={() => removeItem(item.productId, item.size, item.color)}
                   className="text-sm text-muted-foreground underline-offset-4 hover:underline"
                 >
                   Remove

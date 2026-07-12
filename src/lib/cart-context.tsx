@@ -44,10 +44,12 @@ if (typeof window !== "undefined") {
   snapshot = readCart();
 }
 
+function sameVariant(a: { productId: string; size: string; color?: string }, b: typeof a) {
+  return a.productId === b.productId && a.size === b.size && (a.color ?? "") === (b.color ?? "");
+}
+
 function addItem(item: CartItem) {
-  const existing = snapshot.find(
-    (i) => i.productId === item.productId && i.size === item.size
-  );
+  const existing = snapshot.find((i) => sameVariant(i, item));
   if (existing) {
     commit(
       snapshot.map((i) =>
@@ -59,18 +61,18 @@ function addItem(item: CartItem) {
   }
 }
 
-function removeItem(productId: string, size: string) {
-  commit(snapshot.filter((i) => !(i.productId === productId && i.size === size)));
+function removeItem(productId: string, size: string, color?: string) {
+  commit(snapshot.filter((i) => !sameVariant(i, { productId, size, color })));
 }
 
-function setQuantity(productId: string, size: string, quantity: number) {
+function setQuantity(productId: string, size: string, quantity: number, color?: string) {
   if (quantity <= 0) {
-    removeItem(productId, size);
+    removeItem(productId, size, color);
     return;
   }
   commit(
     snapshot.map((i) =>
-      i.productId === productId && i.size === size ? { ...i, quantity } : i
+      sameVariant(i, { productId, size, color }) ? { ...i, quantity } : i
     )
   );
 }

@@ -33,8 +33,10 @@ export default async function EditProductPage({
           name: product.name,
           description: product.description,
           price: product.price,
+          discountPercent: product.discount_percent,
           sizeQuantities: product.size_quantities,
-          imageUrl: product.image_url,
+          colors: product.colors,
+          imageUrls: product.image_urls,
         }}
       />
     </div>

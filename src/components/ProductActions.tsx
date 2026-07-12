@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-context";
 import { setBuyNowItem } from "@/lib/buy-now";
-import { PRODUCT_SIZES, totalStock, type Product } from "@/lib/types";
+import {
+  PRODUCT_SIZES,
+  PRODUCT_COLOR_SWATCHES,
+  totalStock,
+  getDiscountedPrice,
+  type Product,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function ProductActions({ product }: { product: Product }) {
@@ -15,19 +21,22 @@ export default function ProductActions({ product }: { product: Product }) {
     (s) => (product.size_quantities[s] ?? 0) > 0
   );
   const [size, setSize] = useState(sizesWithStock[0] ?? "");
+  const [color, setColor] = useState(product.colors[0] ?? "");
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
   const available = product.size_quantities[size as (typeof PRODUCT_SIZES)[number]] ?? 0;
   const outOfStock = totalStock(product.size_quantities) === 0;
+  const price = getDiscountedPrice(product.price, product.discount_percent);
 
   function currentItem() {
     return {
       productId: product.id,
       name: product.name,
-      price: product.price,
-      image_url: product.image_url,
+      price,
+      image_url: product.image_urls[0] ?? "",
       size,
+      color: color || undefined,
       quantity,
     };
   }
@@ -76,6 +85,27 @@ export default function ProductActions({ product }: { product: Product }) {
           })}
         </div>
       </div>
+
+      {product.colors.length > 0 && (
+        <div>
+          <p className="mb-2 text-sm font-medium">Color{color ? `: ${color}` : ""}</p>
+          <div className="flex flex-wrap gap-2">
+            {product.colors.map((c) => (
+              <button
+                key={c}
+                type="button"
+                aria-label={c}
+                onClick={() => setColor(c)}
+                className={cn(
+                  "h-8 w-8 rounded-full border-2 transition",
+                  c === color ? "border-(--brand-gold)" : "border-border"
+                )}
+                style={{ backgroundColor: PRODUCT_COLOR_SWATCHES[c] ?? "#cccccc" }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <p className="mb-2 text-sm font-medium">Quantity</p>

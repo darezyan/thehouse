@@ -6,10 +6,15 @@ create table if not exists products (
   name text not null,
   description text not null default '',
   price numeric(10,2) not null,
-  image_url text not null,
+  -- First entry is the cover photo shown in the shop grid/cart/orders; the
+  -- product page lets customers swipe through all of them.
+  image_urls text[] not null default '{}',
   -- e.g. {"S": 5, "M": 10, "L": 0}. A size is only shown to customers when
   -- its quantity is > 0; the whole product is out of stock when every size is.
   size_quantities jsonb not null default '{}',
+  discount_percent int not null default 0 check (discount_percent >= 0 and discount_percent <= 100),
+  -- Optional. Empty means this product doesn't offer color choices at all.
+  colors text[] not null default '{}',
   created_at timestamptz not null default now()
 );
 
@@ -39,6 +44,7 @@ create table if not exists order_items (
   product_id uuid references products(id) on delete set null,
   product_name text not null,
   size text,
+  color text,
   quantity int not null,
   unit_price numeric(10,2) not null
 );
@@ -105,8 +111,8 @@ as $$
 $$;
 
 -- "Last Dance" World Cup capsule. image_url paths are served from /public/products.
-insert into products (name, description, price, image_url, size_quantities) values
-  ('Last Dance Graphic Tee', 'Inspired by the players who shaped a generation''s football experience: Messi, Ronaldo, and Neymar. This is their last World Cup, and the end of an illustrious career.', 15000, '/products/last-dance-graphic-tee.jpg', '{"S":20,"M":20,"L":20,"XL":20,"2XL":20}'),
-  ('Portugal B&W Ringer Tee (LD-01)', 'Inspired by the greatest goalscorer of all time, Cristiano Ronaldo, marking his last World Cup.', 17000, '/products/portugal-bw-ringer-tee.jpg', '{"S":20,"M":20,"L":20,"XL":20,"2XL":20}'),
-  ('Argentina Ringer Tee (LD-02)', 'Inspired by the GOAT, Lionel Messi, and the legends before him. The dates signify Argentina''s World Cup win years.', 17000, '/products/argentina-ringer-tee.jpg', '{"M":20,"L":20,"XL":20,"2XL":20}'),
-  ('Brasil Ringer Tee (LD-03)', 'Inspired by the prince who never became king, Neymar Jr., as this might mark his last World Cup.', 17000, '/products/brasil-ringer-tee.jpg', '{"M":20,"L":20,"XL":20,"2XL":20}');
+insert into products (name, description, price, image_urls, size_quantities) values
+  ('Last Dance Graphic Tee', 'Inspired by the players who shaped a generation''s football experience: Messi, Ronaldo, and Neymar. This is their last World Cup, and the end of an illustrious career.', 15000, array['/products/last-dance-graphic-tee.jpg'], '{"S":20,"M":20,"L":20,"XL":20,"2XL":20}'),
+  ('Portugal B&W Ringer Tee (LD-01)', 'Inspired by the greatest goalscorer of all time, Cristiano Ronaldo, marking his last World Cup.', 17000, array['/products/portugal-bw-ringer-tee.jpg'], '{"S":20,"M":20,"L":20,"XL":20,"2XL":20}'),
+  ('Argentina Ringer Tee (LD-02)', 'Inspired by the GOAT, Lionel Messi, and the legends before him. The dates signify Argentina''s World Cup win years.', 17000, array['/products/argentina-ringer-tee.jpg'], '{"M":20,"L":20,"XL":20,"2XL":20}'),
+  ('Brasil Ringer Tee (LD-03)', 'Inspired by the prince who never became king, Neymar Jr., as this might mark his last World Cup.', 17000, array['/products/brasil-ringer-tee.jpg'], '{"M":20,"L":20,"XL":20,"2XL":20}');

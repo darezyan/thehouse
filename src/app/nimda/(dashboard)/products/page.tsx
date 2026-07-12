@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { formatPrice } from "@/lib/format";
-import { PRODUCT_SIZES, totalStock, type Product } from "@/lib/types";
+import { PRODUCT_SIZES, totalStock, getDiscountedPrice, type Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { deleteProductAction } from "./actions";
 
@@ -28,6 +28,7 @@ export default async function AdminProductsPage() {
               <th className="px-4 py-3">Photo</th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Discount</th>
               <th className="px-4 py-3">Qty per size</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3" />
@@ -37,10 +38,24 @@ export default async function AdminProductsPage() {
             {(products ?? []).map((product) => (
               <tr key={product.id} className="border-b border-black/5 last:border-0">
                 <td className="px-4 py-3">
-                  <img src={product.image_url} alt="" className="h-14 w-12 object-cover" />
+                  <img src={product.image_urls[0]} alt="" className="h-14 w-12 object-cover" />
                 </td>
                 <td className="px-4 py-3 font-medium">{product.name}</td>
-                <td className="px-4 py-3">{formatPrice(product.price)}</td>
+                <td className="px-4 py-3">
+                  {product.discount_percent > 0 ? (
+                    <>
+                      <span className="text-muted-foreground line-through">
+                        {formatPrice(product.price)}
+                      </span>{" "}
+                      <span>{formatPrice(getDiscountedPrice(product.price, product.discount_percent))}</span>
+                    </>
+                  ) : (
+                    formatPrice(product.price)
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {product.discount_percent > 0 ? `${product.discount_percent}%` : "—"}
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {PRODUCT_SIZES.map((s) => `${s}:${product.size_quantities[s] ?? 0}`).join("  ")}
                 </td>
@@ -77,7 +92,7 @@ export default async function AdminProductsPage() {
             ))}
             {(products ?? []).length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">
                   No products yet.
                 </td>
               </tr>

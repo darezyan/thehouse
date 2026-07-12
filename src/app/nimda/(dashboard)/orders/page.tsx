@@ -57,7 +57,11 @@ function OrderCard({ order }: { order: OrderWithItems }) {
         {order.order_items.map((item) => (
           <div key={item.id} className="flex items-center justify-between">
             <span>
-              {item.product_name} {item.size ? `(${item.size})` : ""} × {item.quantity}
+              {item.product_name}{" "}
+              {[item.size, item.color].filter(Boolean).length > 0
+                ? `(${[item.size, item.color].filter(Boolean).join(", ")})`
+                : ""}{" "}
+              × {item.quantity}
             </span>
             <span>{formatPrice(item.unit_price * item.quantity)}</span>
           </div>

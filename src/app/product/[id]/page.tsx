@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
+import { getDiscountedPrice } from "@/lib/types";
 import ProductActions from "@/components/ProductActions";
+import ProductGallery from "@/components/ProductGallery";
 
 export const revalidate = 0;
 
@@ -16,6 +18,9 @@ export default async function ProductPage({
 
   if (!product) notFound();
 
+  const discountedPrice = getDiscountedPrice(product.price, product.discount_percent);
+  const hasDiscount = product.discount_percent > 0;
+
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
       <Link
@@ -26,20 +31,25 @@ export default async function ProductPage({
       </Link>
 
       <div className="grid gap-10 sm:grid-cols-2">
-        <div className="aspect-3/4 w-full overflow-hidden bg-muted">
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="h-full w-full object-cover"
-          />
+        <div className="overflow-hidden bg-muted">
+          <ProductGallery images={product.image_urls} alt={product.name} />
         </div>
 
         <div className="flex flex-col">
           <h1 className="text-2xl font-semibold tracking-wide uppercase">
             {product.name}
           </h1>
-          <p className="mt-2 text-lg text-(--brand-gold)">
-            {formatPrice(product.price)}
+          <p className="mt-2 text-lg">
+            {hasDiscount ? (
+              <>
+                <span className="mr-2 text-muted-foreground line-through">
+                  {formatPrice(product.price)}
+                </span>
+                <span className="text-(--brand-gold)">{formatPrice(discountedPrice)}</span>
+              </>
+            ) : (
+              <span className="text-(--brand-gold)">{formatPrice(product.price)}</span>
+            )}
           </p>
 
           <p className="mt-6 leading-relaxed text-foreground/80">

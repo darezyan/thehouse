@@ -17,7 +17,9 @@ const productSchema = z.object({
   name: z.string().trim().min(2, "Enter a product name"),
   description: z.string().trim().min(10, "Enter a description (min 10 characters)"),
   price: z.coerce.number().positive("Enter a valid price"),
+  discountPercent: z.coerce.number().int().min(0, "Enter 0-100").max(100, "Enter 0-100"),
   sizeQuantities: z.record(z.string(), z.number().int().min(0)),
+  colors: z.array(z.string()),
 });
 
 function parseProductForm(formData: FormData) {
@@ -31,7 +33,9 @@ function parseProductForm(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description"),
     price: formData.get("price"),
+    discountPercent: formData.get("discountPercent") || 0,
     sizeQuantities,
+    colors: formData.getAll("colors"),
   });
 }
 
@@ -60,6 +64,14 @@ async function uploadImage(file: File): Promise<string> {
   return data.publicUrl;
 }
 
+async function uploadImages(files: File[]): Promise<string[]> {
+  const urls: string[] = [];
+  for (const file of files) {
+    urls.push(await uploadImage(file));
+  }
+  return urls;
+}
+
 export async function createProductAction(
   _prevState: ProductFormState,
   formData: FormData
@@ -71,14 +83,16 @@ export async function createProductAction(
     return { fieldErrors: flattenIssues(result.error) };
   }
 
-  const imageFile = formData.get("image");
-  if (!(imageFile instanceof File) || imageFile.size === 0) {
-    return { fieldErrors: { image: "Upload a product photo" } };
+  const imageFiles = formData.getAll("images").filter(
+    (f): f is File => f instanceof File && f.size > 0
+  );
+  if (imageFiles.length === 0) {
+    return { fieldErrors: { images: "Upload at least one product photo" } };
   }
 
-  let imageUrl: string;
+  let imageUrls: string[];
   try {
-    imageUrl = await uploadImage(imageFile);
+    imageUrls = await uploadImages(imageFiles);
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Image upload failed" };
   }
@@ -87,8 +101,10 @@ export async function createProductAction(
     name: result.data.name,
     description: result.data.description,
     price: result.data.price,
+    discount_percent: result.data.discountPercent,
     size_quantities: result.data.sizeQuantities,
-    image_url: imageUrl,
+    colors: result.data.colors,
+    image_urls: imageUrls,
   });
 
   if (error) {
@@ -112,21 +128,32 @@ export async function updateProductAction(
     return { fieldErrors: flattenIssues(result.error) };
   }
 
-  const update: Record<string, unknown> = {
+  const existingImages = formData.getAll("existingImages").map(String);
+  const newImageFiles = formData.getAll("images").filter(
+    (f): f is File => f instanceof File && f.size > 0
+  );
+
+  let newImageUrls: string[];
+  try {
+    newImageUrls = await uploadImages(newImageFiles);
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Image upload failed" };
+  }
+
+  const imageUrls = [...existingImages, ...newImageUrls];
+  if (imageUrls.length === 0) {
+    return { fieldErrors: { images: "A product needs at least one photo" } };
+  }
+
+  const update = {
     name: result.data.name,
     description: result.data.description,
     price: result.data.price,
+    discount_percent: result.data.discountPercent,
     size_quantities: result.data.sizeQuantities,
+    colors: result.data.colors,
+    image_urls: imageUrls,
   };
-
-  const imageFile = formData.get("image");
-  if (imageFile instanceof File && imageFile.size > 0) {
-    try {
-      update.image_url = await uploadImage(imageFile);
-    } catch (err) {
-      return { error: err instanceof Error ? err.message : "Image upload failed" };
-    }
-  }
 
   const { error } = await supabaseAdmin.from("products").update(update).eq("id", productId);
 
