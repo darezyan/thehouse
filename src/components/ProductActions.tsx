@@ -69,20 +69,23 @@ export default function ProductActions({
         <div className="flex flex-wrap gap-2">
           {PRODUCT_SIZES.map((s) => {
             const stock = product.size_quantities[s] ?? 0;
-            if (stock === 0) return null;
+            const soldOut = stock === 0;
             return (
               <button
                 key={s}
                 type="button"
                 onClick={() => {
                   setSize(s);
-                  setQuantity(1);
+                  setQuantity(Math.min(1, stock));
                 }}
                 className={cn(
                   "min-w-11 rounded-md border px-3 py-2 text-sm transition",
-                  s === size
-                    ? "border-(--brand-gold) bg-(--brand-gold) text-white"
-                    : "border-border hover:border-(--brand-gold)/50"
+                  soldOut
+                    ? "border-border text-muted-foreground line-through"
+                    : s === size
+                      ? "border-(--brand-gold) bg-(--brand-gold) text-white"
+                      : "border-border hover:border-(--brand-gold)/50",
+                  s === size && soldOut && "border-destructive/50"
                 )}
               >
                 {s}
@@ -141,7 +144,9 @@ export default function ProductActions({
             +
           </button>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">{available} in stock</p>
+        {available === 0 && (
+          <p className="mt-1 text-xs font-medium text-destructive uppercase">Sold out</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">
@@ -150,10 +155,16 @@ export default function ProductActions({
           variant="outline"
           className="flex-1 py-4 text-sm"
           onClick={handleAddToCart}
+          disabled={available === 0}
         >
           {added ? "Added ✓" : "Add to Cart"}
         </Button>
-        <Button size="lg" className="flex-1 py-4 text-sm" onClick={handleBuyNow}>
+        <Button
+          size="lg"
+          className="flex-1 py-4 text-sm"
+          onClick={handleBuyNow}
+          disabled={available === 0}
+        >
           Buy Now
         </Button>
       </div>
