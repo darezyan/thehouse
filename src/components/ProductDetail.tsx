@@ -11,7 +11,9 @@ export default function ProductDetail({ product }: { product: Product }) {
     const colorImages = product.colors
       .map((c) => product.color_images[c])
       .filter((url): url is string => Boolean(url));
-    return [...product.image_urls, ...colorImages];
+    // image_urls may already contain a color's photo (it's used as the
+    // fallback cover when no general photo is uploaded), so dedupe.
+    return Array.from(new Set([...product.image_urls, ...colorImages]));
   }, [product]);
 
   const colorImageIndex = useMemo(() => {

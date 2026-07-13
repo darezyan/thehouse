@@ -36,11 +36,12 @@ export default function ProductActions({
   const price = getDiscountedPrice(product.price, product.discount_percent);
 
   function currentItem() {
+    const colorImage = color ? product.color_images[color] : undefined;
     return {
       productId: product.id,
       name: product.name,
       price,
-      image_url: product.image_urls[0] ?? "",
+      image_url: colorImage || product.image_urls[0] || "",
       size,
       color: color || undefined,
       quantity,
