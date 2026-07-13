@@ -7,19 +7,6 @@ export const revalidate = 0;
 
 type OrderWithItems = Order & { order_items: OrderItem[] };
 
-function PaymentStatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    paid: "text-green-700",
-    failed: "text-destructive",
-    pending: "text-muted-foreground",
-  };
-  return (
-    <span className={`text-xs font-medium tracking-wide uppercase ${styles[status] ?? styles.pending}`}>
-      {status}
-    </span>
-  );
-}
-
 function OrderCard({ order }: { order: OrderWithItems }) {
   return (
     <div className="border border-black/10 bg-white p-5">
@@ -40,16 +27,13 @@ function OrderCard({ order }: { order: OrderWithItems }) {
           </p>
         </div>
         <div className="text-right">
-          <PaymentStatusBadge status={order.payment_status} />
-          <div className="mt-2">
-            {order.status === "delivered" ? (
-              <span className="text-xs font-medium tracking-wide text-green-700 uppercase">
-                Delivered
-              </span>
-            ) : (
-              <MarkDeliveredButton orderId={order.id} />
-            )}
-          </div>
+          {order.status === "delivered" ? (
+            <span className="text-xs font-medium tracking-wide text-green-700 uppercase">
+              Delivered
+            </span>
+          ) : (
+            <MarkDeliveredButton orderId={order.id} />
+          )}
         </div>
       </div>
 
@@ -80,9 +64,14 @@ function OrderCard({ order }: { order: OrderWithItems }) {
 }
 
 export default async function AdminOrdersPage() {
+  // Checkout creates the order row before the customer pays (so the
+  // payment_ref exists for Flutterwave's callback/webhook to find), which
+  // means most rows are abandoned/failed checkouts, not real orders — only
+  // ones that actually got paid should ever show up here.
   const { data: orders } = await supabaseAdmin
     .from("orders")
     .select("*, order_items(*)")
+    .eq("payment_status", "paid")
     .order("created_at", { ascending: false })
     .returns<OrderWithItems[]>();
 
@@ -95,14 +84,14 @@ export default async function AdminOrdersPage() {
 
       <section>
         <h2 className="mb-4 text-sm font-medium text-muted-foreground uppercase">
-          Pending ({pendingOrders.length})
+          Awaiting delivery ({pendingOrders.length})
         </h2>
         <div className="space-y-4">
           {pendingOrders.map((order) => (
             <OrderCard key={order.id} order={order} />
           ))}
           {pendingOrders.length === 0 && (
-            <p className="py-6 text-center text-muted-foreground">No pending orders.</p>
+            <p className="py-6 text-center text-muted-foreground">No orders awaiting delivery.</p>
           )}
         </div>
       </section>
