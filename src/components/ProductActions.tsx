@@ -107,6 +107,7 @@ export default function ProductActions({
                 aria-label={c}
                 onClick={() => {
                   setColor(c);
+                  setQuantity(1);
                   onColorSelect?.(c);
                 }}
                 className={cn(
