@@ -123,6 +123,12 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
       style={{ backgroundImage: "url('/brand/banner.jpg')" }}
     >
       <div className="mx-auto max-w-3xl bg-(--brand-cream)/95 px-6 py-10 shadow-xl sm:px-10">
+        <Link
+          href="/cart"
+          className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
+        >
+          ← Back
+        </Link>
         <h1 className="mb-8 text-2xl font-semibold tracking-wide uppercase">Checkout</h1>
 
         <div className="grid gap-10 sm:grid-cols-2">

@@ -32,6 +32,12 @@ export default function CartPage() {
       style={{ backgroundImage: "url('/brand/banner.jpg')" }}
     >
       <div className="mx-auto max-w-3xl bg-(--brand-cream)/95 px-6 py-10 shadow-xl sm:px-10">
+      <Link
+        href="/shop"
+        className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
+      >
+        ← Back
+      </Link>
       <h1 className="mb-8 text-2xl font-semibold tracking-wide uppercase">Your Cart</h1>
 
       <div className="space-y-6">

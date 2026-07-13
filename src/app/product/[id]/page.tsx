@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/products";
 import ProductDetail from "@/components/ProductDetail";
@@ -16,6 +17,13 @@ export default async function ProductPage({
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10">
+      <Link
+        href="/shop"
+        className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
+      >
+        ← Back
+      </Link>
+
       <ProductDetail product={product} />
     </div>
   );
