@@ -20,6 +20,28 @@ export async function initiateCheckoutAction(
     return { error: "There's nothing to order." };
   }
 
+  // A cart persists in the browser indefinitely, so it can reference a
+  // product that's since been deleted from admin — inserting an order_item
+  // for it would violate the products FK, so catch it early with a clear
+  // message instead of a generic failure.
+  const productIds = [...new Set(items.map((i) => i.productId))];
+  const { data: existingProducts } = await supabaseAdmin
+    .from("products")
+    .select("id")
+    .in("id", productIds);
+  const existingIds = new Set((existingProducts ?? []).map((p) => p.id));
+  const missingNames = [
+    ...new Set(
+      items.filter((i) => !existingIds.has(i.productId)).map((i) => i.name)
+    ),
+  ];
+  if (missingNames.length > 0) {
+    const verb = missingNames.length === 1 ? "no longer exists" : "no longer exist";
+    return {
+      error: `${missingNames.join(", ")} ${verb}. Please remove ${missingNames.length === 1 ? "it" : "them"} from your cart and try again.`,
+    };
+  }
+
   const data = result.data;
 
   // Never trust a client-supplied fee — re-fetch the current rates server-side.
@@ -73,6 +95,8 @@ export async function initiateCheckoutAction(
   );
 
   if (itemsError) {
+    // Don't leave a total-but-no-items order sitting in the DB forever.
+    await supabaseAdmin.from("orders").delete().eq("id", order.id);
     return { error: "Something went wrong placing your order. Please try again." };
   }
 
