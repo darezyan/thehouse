@@ -65,7 +65,7 @@ function OrderCard({ order }: { order: OrderWithItems }) {
 
 export default async function AdminOrdersPage() {
   // Checkout creates the order row before the customer pays (so the
-  // payment_ref exists for Flutterwave's callback/webhook to find), which
+  // payment_ref exists for Paystack's callback/webhook to find), which
   // means most rows are abandoned/failed checkouts, not real orders — only
   // ones that actually got paid should ever show up here.
   const { data: orders } = await supabaseAdmin

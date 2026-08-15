@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { verifyTransaction } from "@/lib/flutterwave";
+import { verifyTransaction } from "@/lib/paystack";
 import { decrementStockForOrder } from "@/lib/inventory";
 import { Button } from "@/components/ui/button";
 import ClearPurchasedItems from "./clear-purchased-items";
@@ -15,23 +15,20 @@ type Outcome = {
   isBuyNow?: boolean;
 };
 
-async function resolveOutcome(
-  txRef: string | undefined,
-  transactionId: string | undefined
-): Promise<Outcome> {
-  if (!txRef) {
+async function resolveOutcome(reference: string | undefined): Promise<Outcome> {
+  if (!reference) {
     return {
       success: false,
       message: "We couldn't find that payment. If you were charged, contact us with your bank reference.",
     };
   }
 
-  const isBuyNow = txRef.includes("-buynow-");
+  const isBuyNow = reference.includes("-buynow-");
 
   const { data: order } = await supabaseAdmin
     .from("orders")
     .select("id, customer_name, total, payment_status")
-    .eq("payment_ref", txRef)
+    .eq("payment_ref", reference)
     .single();
 
   if (!order) {
@@ -45,22 +42,15 @@ async function resolveOutcome(
     return { success: true, orderId: order.id, customerName: order.customer_name, isBuyNow };
   }
 
-  if (!transactionId) {
-    // No transaction id at all means Flutterwave never processed a charge
-    // attempt (e.g. the customer navigated away before paying). The redirect
-    // `status` query param itself is not trustworthy for a final decision —
-    // Flutterwave's own docs say to always verify via the API instead, which
-    // is why that's the only thing checked below.
-    await supabaseAdmin.from("orders").update({ payment_status: "failed" }).eq("id", order.id);
-    return { success: false, message: "Your payment wasn't completed. You can try again." };
-  }
-
   try {
-    const verified = await verifyTransaction(transactionId);
+    // The redirect itself is not trustworthy for a final decision — Paystack's
+    // own docs say to always verify via the API instead, which is why that's
+    // the only thing checked below.
+    const verified = await verifyTransaction(reference);
     const amountMatches = Math.abs(verified.amount - Number(order.total)) < 1;
     const isValid =
-      verified.status === "successful" &&
-      verified.txRef === txRef &&
+      verified.status === "success" &&
+      verified.reference === reference &&
       verified.currency === "NGN" &&
       amountMatches;
 
@@ -79,7 +69,7 @@ async function resolveOutcome(
     // back no row, so stock never gets decremented twice for one order.
     const { data: updated } = await supabaseAdmin
       .from("orders")
-      .update({ payment_status: "paid", flw_transaction_id: transactionId })
+      .update({ payment_status: "paid", paystack_transaction_id: String(verified.id) })
       .eq("id", order.id)
       .neq("payment_status", "paid")
       .select("id")
@@ -101,10 +91,12 @@ async function resolveOutcome(
 export default async function CheckoutCallbackPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; tx_ref?: string; transaction_id?: string }>;
+  // Paystack appends both `reference` and `trxref` (same value) to the
+  // callback_url; accept either.
+  searchParams: Promise<{ reference?: string; trxref?: string }>;
 }) {
-  const { tx_ref, transaction_id } = await searchParams;
-  const outcome = await resolveOutcome(tx_ref, transaction_id);
+  const { reference, trxref } = await searchParams;
+  const outcome = await resolveOutcome(reference ?? trxref);
 
   return (
     <div

@@ -2,7 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { initiatePayment } from "@/lib/flutterwave";
+import { initiatePayment } from "@/lib/paystack";
 import { checkoutSchema, deliveryFeeForState, type CheckoutFormValues } from "@/lib/checkout";
 import { DEFAULT_DELIVERY_FEES } from "@/lib/delivery";
 import type { CartItem } from "@/lib/types";
@@ -103,15 +103,13 @@ export async function initiateCheckoutAction(
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
   try {
-    const link = await initiatePayment({
+    const authorizationUrl = await initiatePayment({
       txRef,
       amount: total,
       redirectUrl: `${baseUrl}/checkout/callback`,
       customerEmail: data.email,
-      customerPhone: data.phone,
-      customerName: data.name,
     });
-    return { redirectUrl: link };
+    return { redirectUrl: authorizationUrl };
   } catch (err) {
     return {
       error: err instanceof Error ? err.message : "Failed to start payment. Please try again.",

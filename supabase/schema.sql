@@ -34,11 +34,11 @@ create table if not exists orders (
   notes text,
   total numeric(10,2) not null,
   status text not null default 'pending',
-  -- Flutterwave payment tracking. payment_status moves pending -> paid/failed
+  -- Paystack payment tracking. payment_status moves pending -> paid/failed
   -- once the callback page or webhook verifies the transaction server-side.
   payment_status text not null default 'pending',
   payment_ref text,
-  flw_transaction_id text,
+  paystack_transaction_id text,
   created_at timestamptz not null default now()
 );
 
