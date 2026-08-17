@@ -21,6 +21,23 @@ export default function ContactPage() {
           </a>
         </p>
         <p>
+          <span className="font-medium">Phone: </span>
+          <a href="tel:+2349061302398" className="text-(--brand-gold) hover:underline">
+            +234 906 130 2398
+          </a>
+        </p>
+        <p>
+          <span className="font-medium">Address: </span>
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=4+Kelani+Ln%2C+Yaba%2C+Lagos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-(--brand-gold) hover:underline"
+          >
+            4 Kelani Ln, Yaba, Lagos
+          </a>
+        </p>
+        <p>
           <span className="font-medium">Instagram: </span>
           <a
             href="https://www.instagram.com/thehouse.pg?igsh=Zm4wMDB2MWVwZmps"
