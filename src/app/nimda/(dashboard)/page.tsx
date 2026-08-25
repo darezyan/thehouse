@@ -5,7 +5,7 @@ import { totalStock, type Product } from "@/lib/types";
 export const revalidate = 0;
 
 export default async function AdminHomePage() {
-  // Orders exist in the DB before payment (so Paystack's callback/webhook
+  // Orders exist in the DB before payment (so Flutterwave's callback/webhook
   // has a row to find), so only ones that actually got paid count as real
   // orders here — otherwise abandoned checkouts would inflate these stats.
   const [{ data: products }, { count: orderCount }, { count: pendingCount }] = await Promise.all([

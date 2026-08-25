@@ -56,7 +56,7 @@ export type Order = {
   status: string;
   payment_status: string;
   payment_ref: string | null;
-  paystack_transaction_id: string | null;
+  flw_transaction_id: string | null;
   created_at: string;
 };
 

@@ -33,7 +33,7 @@ export default function TermsPage() {
         <section>
           <h2 className="font-medium uppercase">Payment</h2>
           <p className="mt-2 text-muted-foreground">
-            Payments are processed securely through Paystack. We do not store your
+            Payments are processed securely through Flutterwave. We do not store your
             card details on our servers.
           </p>
         </section>

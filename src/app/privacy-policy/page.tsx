@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
             When you place an order, we collect information such as your name,
             phone number, delivery address, and email address in order to fulfil
             and deliver your order. Payment details are collected and processed
-            directly by Paystack; we do not see or store your card information.
+            directly by Flutterwave; we do not see or store your card information.
           </p>
         </section>
 
@@ -33,7 +33,7 @@ export default function PrivacyPolicyPage() {
           <h2 className="font-medium uppercase">Third Parties</h2>
           <p className="mt-2 text-muted-foreground">
             We share order information with third parties only where necessary to
-            fulfil your order, such as our payment processor (Paystack) and
+            fulfil your order, such as our payment processor (Flutterwave) and
             delivery couriers.
           </p>
         </section>
