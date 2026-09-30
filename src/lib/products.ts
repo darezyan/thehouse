@@ -1,6 +1,8 @@
 import { supabase } from "./supabase";
-import { totalStock, type Product } from "./types";
+import type { Product } from "./types";
 
+// Sold-out products (every size at 0) are still returned so the shop can
+// show them with a "Sold out" label instead of hiding them.
 export async function getProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
@@ -11,7 +13,7 @@ export async function getProducts(): Promise<Product[]> {
     console.error("Failed to load products:", error.message);
     return [];
   }
-  return (data ?? []).filter((p) => totalStock(p.size_quantities) > 0);
+  return data ?? [];
 }
 
 export async function getProduct(id: string): Promise<Product | null> {

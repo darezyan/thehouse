@@ -66,7 +66,7 @@ export default async function AdminProductsPage() {
                     </span>
                   ) : (
                     <span className="text-xs font-medium tracking-wide text-destructive uppercase">
-                      Out of stock
+                      Sold out
                     </span>
                   )}
                 </td>

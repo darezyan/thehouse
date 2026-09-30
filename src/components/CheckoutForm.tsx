@@ -151,10 +151,11 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email address</Label>
               <Input
                 id="email"
                 type="email"
+                placeholder="yourname@gmail.com"
                 value={form.email}
                 onChange={(e) => update("email", e.target.value)}
                 aria-invalid={!!fieldErrors.email}

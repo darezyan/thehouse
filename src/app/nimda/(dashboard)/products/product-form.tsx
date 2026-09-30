@@ -213,8 +213,8 @@ export default function ProductForm({ action, submitLabel, initialValues }: Prod
           ))}
         </div>
         <p className="text-xs text-muted-foreground">
-          Set a size to 0 to hide it from customers. If every size is 0, the whole product is
-          treated as out of stock.
+          Set a size to 0 to hide it from customers. If every size is 0, the product stays in
+          the shop marked &quot;Sold out&quot;.
         </p>
       </div>
 

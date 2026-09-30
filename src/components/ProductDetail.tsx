@@ -59,6 +59,10 @@ export default function ProductDetail({ product }: { product: Product }) {
 
         <p className="mt-6 leading-relaxed text-foreground/80">{product.description}</p>
 
+        <p className="mt-4 border-l-2 border-(--brand-gold) pl-3 text-sm font-medium">
+          Orders take 7–14 working days to arrive.
+        </p>
+
         <div className="mt-8">
           <ProductActions
             product={product}

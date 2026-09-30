@@ -42,6 +42,9 @@ export default function Header() {
             <Link href="/cart" onClick={() => setOpen(false)}>
               Cart
             </Link>
+            <Link href="/size-chart" onClick={() => setOpen(false)}>
+              Size Chart
+            </Link>
           </nav>
         )}
       </div>

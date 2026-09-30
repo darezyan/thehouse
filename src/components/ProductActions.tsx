@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-context";
@@ -60,13 +61,18 @@ export default function ProductActions({
   }
 
   if (outOfStock) {
-    return <p className="text-sm font-medium text-muted-foreground uppercase">Out of stock</p>;
+    return <p className="text-lg font-semibold tracking-wide uppercase">Sold out</p>;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="mb-2 text-sm font-medium">Size</p>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-sm font-medium">Size</p>
+          <Link href="/size-chart" className="text-sm underline underline-offset-4">
+            Size chart
+          </Link>
+        </div>
         <div className="flex flex-wrap gap-2">
           {PRODUCT_SIZES.map((s) => {
             const stock = product.size_quantities[s] ?? 0;
@@ -84,7 +90,7 @@ export default function ProductActions({
                   soldOut
                     ? "border-border text-muted-foreground line-through"
                     : s === size
-                      ? "border-(--brand-gold) bg-(--brand-gold) text-white"
+                      ? "border-(--brand-gold) bg-(--brand-gold) text-primary-foreground"
                       : "border-border hover:border-(--brand-gold)/50",
                   s === size && soldOut && "border-destructive/50"
                 )}

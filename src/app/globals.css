@@ -122,6 +122,28 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Black background, yellow text — used by the shop and product pages. */
+.theme-noir {
+  --brand-gold: #fec901;
+  --background: #000000;
+  --foreground: #fec901;
+  --card: #000000;
+  --card-foreground: #fec901;
+  --popover: #000000;
+  --popover-foreground: #fec901;
+  --primary: #fec901;
+  --primary-foreground: #000000;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #fec901;
+  --muted: #1a1a1a;
+  --muted-foreground: rgb(254 201 1 / 65%);
+  --accent: #1a1a1a;
+  --accent-foreground: #fec901;
+  --border: rgb(254 201 1 / 35%);
+  --input: rgb(254 201 1 / 35%);
+  --ring: #fec901;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

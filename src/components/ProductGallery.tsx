@@ -73,7 +73,7 @@ export default function ProductGallery({
                 type="button"
                 aria-label="Previous photo"
                 onClick={() => onIndexChange(activeIndex - 1)}
-                className="absolute top-1/2 left-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl shadow-md"
+                className="absolute top-1/2 left-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl text-black shadow-md"
               >
                 ‹
               </button>
@@ -83,7 +83,7 @@ export default function ProductGallery({
                 type="button"
                 aria-label="Next photo"
                 onClick={() => onIndexChange(activeIndex + 1)}
-                className="absolute top-1/2 right-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl shadow-md"
+                className="absolute top-1/2 right-2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl text-black shadow-md"
               >
                 ›
               </button>

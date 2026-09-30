@@ -16,15 +16,17 @@ export default async function ProductPage({
   if (!product) notFound();
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-10">
-      <Link
-        href="/shop"
-        className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
-      >
-        ← Back
-      </Link>
+    <div className="theme-noir -mt-16 min-h-screen bg-background pt-16 text-foreground">
+      <div className="mx-auto max-w-5xl px-5 py-10">
+        <Link
+          href="/shop"
+          className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
+        >
+          ← Back
+        </Link>
 
-      <ProductDetail product={product} />
+        <ProductDetail product={product} />
+      </div>
     </div>
   );
 }
