@@ -102,11 +102,8 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
 
   if (items.length === 0) {
     return (
-      <div
-        className="-mt-16 flex min-h-screen items-center justify-center bg-cover bg-center px-5 pt-16"
-        style={{ backgroundImage: "url('/brand/banner.jpg')" }}
-      >
-        <div className="mx-auto w-full max-w-md bg-(--brand-cream)/95 px-8 py-14 text-center shadow-xl">
+      <div className="theme-noir -mt-16 flex min-h-screen items-center justify-center bg-background px-5 pt-16 text-foreground">
+        <div className="mx-auto w-full max-w-md border border-border px-8 py-14 text-center">
           <h1 className="text-2xl font-semibold tracking-wide uppercase">
             Nothing to check out
           </h1>
@@ -118,11 +115,8 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
   }
 
   return (
-    <div
-      className="-mt-16 min-h-screen bg-cover bg-center px-5 pt-24 pb-16"
-      style={{ backgroundImage: "url('/brand/banner.jpg')" }}
-    >
-      <div className="mx-auto max-w-3xl bg-(--brand-cream)/95 px-6 py-10 shadow-xl sm:px-10">
+    <div className="theme-noir -mt-16 min-h-screen bg-background px-5 pt-24 pb-16 text-foreground">
+      <div className="mx-auto max-w-3xl border border-border px-6 py-10 sm:px-10">
         <Link
           href="/cart"
           className="mb-6 inline-block text-sm font-medium tracking-wide text-muted-foreground uppercase hover:text-foreground"
@@ -213,7 +207,7 @@ export default function CheckoutForm({ deliveryFees }: { deliveryFees: DeliveryF
                   value={form.state}
                   onChange={(e) => update("state", e.target.value)}
                   aria-invalid={!!fieldErrors.state}
-                  className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
+                  className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30 [&>option]:bg-black"
                 >
                   <option value="" disabled>
                     Select state

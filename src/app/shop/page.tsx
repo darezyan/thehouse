@@ -12,9 +12,9 @@ export default async function ShopPage() {
     <div className="theme-noir -mt-16 min-h-screen bg-background pt-16 text-foreground">
       <div className="flex justify-center px-5 pt-6 pb-2">
         <img
-          src="/brand/logo.png"
+          src="/brand/logo-h.png"
           alt="The House"
-          className="h-32 w-auto sm:h-44"
+          className="h-28 w-auto sm:h-36"
         />
       </div>
 
